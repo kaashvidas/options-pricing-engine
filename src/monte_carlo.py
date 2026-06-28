@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt 
 from black_scholes import black_scholes 
 
-def monte_carlo_options(S, K, T, r, sigma, option_type='call', n_simulations=100_000):
+def monte_carlo_option(S, K, T, r, sigma, option_type='call', n_simulations=100_000):
     """
     Price a European option using Monte Carlo simulation.
 
@@ -43,7 +43,7 @@ def plot_convergence(S, K, T, r, sigma, save_path='convergence_plot.png'):
     mc_prices=[]
 
     for n in sim_sizes:
-        price, _= monte_carlo_options(S, K, T, r, sigma, n_simulations=n)
+        price, _= monte_carlo_option(S, K, T, r, sigma, n_simulations=n)
         mc_prices.append(price)
 
     #Plot 
@@ -69,7 +69,7 @@ if __name__=='__main__':
 
     print (f"Monte Carlo price: {price:.4f}+- {se:.4f}")
     print (f"Black-Scholes price: {bs_price:.4f}")
-    price (f"Difference: {abs(price- bs_price):.4f}")
+    print (f"Difference: {abs(price- bs_price):.4f}")
 
     # Generate convergence plot 
     plot_convergence(S, K, T, r, sigma)
