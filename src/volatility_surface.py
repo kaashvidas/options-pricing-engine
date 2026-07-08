@@ -76,7 +76,7 @@ def plot_volatility_surface(df, S, save_path='volatility_surface.png'):
     ax.set_ylabel('Time to Expiry (years)', fontsize=10)
     ax.set_zlabel('Implied Volatility (%)', fontsize=10)
     ax.set_title(
-        'SPY Volatility Surface\n'
+        'AAPL Volatility Surface\n'
         'Each ribbon = one expiry. Colour = time (dark=short, light=long)',
         fontsize=11
     )
@@ -89,7 +89,7 @@ def plot_volatility_surface(df, S, save_path='volatility_surface.png'):
 
 
 if __name__ == '__main__':
-    df, S = fetch_options_chain('SPY')
+    df, S = fetch_options_chain('AAPL')
 
     print("\nGenerating volatility smile...")
     plot_volatility_smile(df, S, expiry_index=1)

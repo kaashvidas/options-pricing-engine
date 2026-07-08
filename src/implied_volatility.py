@@ -110,7 +110,7 @@ def fetch_options_chain(ticker="SPY", r=0.05):
 
 
 if __name__ == "__main__":
-    df, S = fetch_options_chain("SPY")
+    df, S = fetch_options_chain("AAPL")
 
     print("\nSample IV Results:\n")
     print(df[["strike", "expiry", "T", "market_price", "iv"]].head(10).to_string(index=False))
