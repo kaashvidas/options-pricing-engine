@@ -2,7 +2,7 @@
 
 ## Overview
 
-A quantitative finance project implementing European option pricing using multiple numerical and analytical methods. The project includes Black-Scholes pricing, Monte Carlo simulation, implied volatility estimation, analytical Greeks, interactive visualisations, and a Streamlit web application for real-time option analysis.
+A quantitative finance project implementing European option pricing using analytical and numerical techniques. The project features Black-Scholes pricing, Monte Carlo simulation, implied volatility estimation using Brent's root-finding algorithm, analytical Greeks, volatility smile and volatility surface visualisations, and an interactive Streamlit dashboard for real-time option analysis.
 
 **Live Demo:** https://options-pricing-engine-kaashvi.streamlit.app/
 
@@ -12,12 +12,16 @@ A quantitative finance project implementing European option pricing using multip
 
 - **Black-Scholes Pricing** — Closed-form pricing for European call and put options
 - **Monte Carlo Simulation** — Geometric Brownian Motion (GBM) based simulation with convergence analysis
-- **Implied Volatility Solver** — Newton-Raphson method to estimate market-implied volatility
+- **Implied Volatility Estimation** — Market-implied volatility computed using Brent's root-finding algorithm
 - **Option Greeks** — Analytical computation of Delta, Gamma, Vega, Theta, and Rho
+- **Volatility Smile** — Visualisation of implied volatility across strike prices
+- **Volatility Surface** — Three-dimensional implied volatility surface across strikes and maturities
 - **Interactive Streamlit Dashboard** — Real-time pricing with user-defined market parameters
 - **Visualisations**
   - Monte Carlo convergence
   - Delta sensitivity curve
+  - Volatility smile
+  - Volatility surface
 
 ---
 
@@ -33,9 +37,9 @@ dS = μS dt + σS dW
 
 where
 
-- **S** = stock price
-- **μ** = expected return
-- **σ** = volatility
+- **S** = Stock price
+- **μ** = Expected return
+- **σ** = Volatility
 - **dW** = Brownian motion
 
 ---
@@ -62,7 +66,7 @@ and **N(·)** denotes the cumulative standard normal distribution.
 
 ### Monte Carlo Pricing
 
-Monte Carlo simulation estimates the option price by simulating a large number of terminal stock prices:
+Monte Carlo simulation estimates the option price by generating a large number of possible terminal stock prices according to
 
 ```
 S_T = S · exp((r − 0.5σ²)T + σ√T Z)
@@ -74,15 +78,23 @@ where
 Z ~ N(0,1)
 ```
 
-The discounted average payoff converges to the Black-Scholes price as the number of simulations increases.
+The option payoff is computed for every simulated path, averaged, and discounted back to the present value. As the number of simulated paths increases, the estimate converges toward the analytical Black-Scholes price.
 
 ---
 
 ## Implied Volatility
 
-The project estimates implied volatility from market prices using the **Newton-Raphson iterative method**.
+Rather than assuming volatility is known, market participants infer it from observed option prices.
 
-Given a market option price, the algorithm repeatedly updates volatility until the theoretical Black-Scholes price matches the observed market price.
+This project estimates implied volatility using **Brent's root-finding algorithm**, a robust numerical method that combines bisection, secant, and inverse quadratic interpolation. Unlike Newton-Raphson, Brent's method does not require derivative calculations and guarantees convergence whenever the solution is bracketed.
+
+The algorithm repeatedly solves
+
+```
+BlackScholesPrice(σ) − MarketPrice = 0
+```
+
+until the theoretical option price matches the observed market price within a specified numerical tolerance.
 
 ---
 
@@ -95,7 +107,7 @@ Given a market option price, the algorithm repeatedly updates volatility until t
 | Stock Price (S) | 100 |
 | Strike Price (K) | 100 |
 | Time to Expiry (T) | 1 year |
-| Risk-free Rate (r) | 5% |
+| Risk-Free Rate (r) | 5% |
 | Volatility (σ) | 20% |
 
 ### Pricing Comparison
@@ -123,7 +135,7 @@ Given a market option price, the algorithm repeatedly updates volatility until t
 
 ![Monte Carlo Convergence](convergence_plot.png)
 
-As the number of simulated paths increases, the Monte Carlo estimate converges toward the analytical Black-Scholes price, illustrating the **Law of Large Numbers**.
+*As the number of simulated paths increases, the Monte Carlo estimate converges toward the analytical Black-Scholes price, demonstrating the Law of Large Numbers.*
 
 ---
 
@@ -131,7 +143,23 @@ As the number of simulated paths increases, the Monte Carlo estimate converges t
 
 ![Delta Curve](delta_curve.png)
 
-The Delta curve transitions smoothly from approximately **0** (deep out-of-the-money) to **1** (deep in-the-money), showing how option sensitivity changes with the underlying asset price.
+*Delta transitions smoothly from approximately 0 for deep out-of-the-money options to nearly 1 for deep in-the-money options, illustrating how option sensitivity changes with the underlying asset price.*
+
+---
+
+### Volatility Smile
+
+![Volatility Smile](volatility_smile.png)
+
+*The implied volatility smile illustrates how implied volatility varies across different strike prices for a fixed maturity. Rather than remaining constant as assumed in the Black-Scholes model, implied volatility tends to be higher for deep in-the-money and out-of-the-money options, producing the characteristic "smile" observed in real markets.*
+
+---
+
+### Volatility Surface
+
+![Volatility Surface](volatility_surface.png)
+
+*The volatility surface extends the volatility smile by plotting implied volatility across both strike prices and maturities. It provides a three-dimensional representation of market expectations and is widely used in derivatives pricing, volatility modelling, and risk management.*
 
 ---
 
@@ -141,9 +169,11 @@ The project is deployed as an interactive Streamlit application where users can:
 
 - Input custom market parameters
 - Price European call and put options instantly
-- Compare Black-Scholes and Monte Carlo results
-- Calculate implied volatility from market prices
-- View option Greeks
+- Compare Black-Scholes and Monte Carlo prices
+- Estimate implied volatility from market option prices
+- Compute option Greeks
+- Visualise the volatility smile
+- Explore the three-dimensional volatility surface
 - Experiment with different market scenarios interactively
 
 **Live Demo:** https://options-pricing-engine-kaashvi.streamlit.app/
@@ -159,13 +189,19 @@ options-pricing-engine/
 ├── monte_carlo.py
 ├── greeks.py
 ├── implied_volatility.py
-├── app.py                 # Streamlit application
+├── volatility_smile.py
+├── volatility_surface.py
+├── app.py
 ├── main.py
 ├── requirements.txt
 ├── convergence_plot.png
 ├── delta_curve.png
+├── volatility_smile.png
+├── volatility_surface.png
 └── README.md
 ```
+
+> **Note:** If the volatility smile and surface are generated directly inside `app.py`, you can omit `volatility_smile.py` and `volatility_surface.py` from the project structure.
 
 ---
 
@@ -174,11 +210,11 @@ options-pricing-engine/
 Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/<your-username>/options-pricing-engine.git
 cd options-pricing-engine
 ```
 
-Install dependencies
+Install the required dependencies
 
 ```bash
 pip install -r requirements.txt
@@ -188,13 +224,15 @@ pip install -r requirements.txt
 
 ## Running the Project
 
-Run individual modules
+Run the individual modules
 
 ```bash
 python black_scholes.py
 python monte_carlo.py
 python greeks.py
 python implied_volatility.py
+python volatility_smile.py
+python volatility_surface.py
 ```
 
 Run the complete pipeline
@@ -203,7 +241,7 @@ Run the complete pipeline
 python main.py
 ```
 
-Launch the Streamlit app locally
+Launch the Streamlit application locally
 
 ```bash
 streamlit run app.py
@@ -213,26 +251,38 @@ streamlit run app.py
 
 ## Coursework Connections
 
-This project applies concepts from
+This project applies concepts from:
 
-- **Probability & Stochastic Processes**
-  - Geometric Brownian Motion
-  - Risk-neutral pricing
-  - Monte Carlo methods
+### Probability & Stochastic Processes
 
-- **Real Analysis**
-  - Numerical convergence
-  - Law of Large Numbers
+- Geometric Brownian Motion
+- Risk-neutral pricing
+- Monte Carlo simulation
 
-- **Computational Mathematics**
-  - Vectorised NumPy implementation
-  - Numerical root-finding using Newton-Raphson
+### Numerical Methods
 
-- **Quantitative Finance**
-  - Black-Scholes model
-  - Option Greeks
-  - Implied volatility estimation
-  - Derivatives pricing
+- Brent's root-finding algorithm
+- Numerical solution of nonlinear equations
+
+### Real Analysis
+
+- Convergence of Monte Carlo estimators
+- Law of Large Numbers
+
+### Computational Mathematics
+
+- Vectorised NumPy computations
+- Three-dimensional surface generation
+- Scientific computing using SciPy
+
+### Quantitative Finance
+
+- Black-Scholes option pricing
+- Option Greeks
+- Implied volatility estimation
+- Volatility smile modelling
+- Volatility surface analysis
+- Derivatives pricing
 
 ---
 
@@ -242,15 +292,17 @@ This project applies concepts from
 - NumPy
 - SciPy
 - Matplotlib
+- Plotly
 - Streamlit
 
 ---
 
 ## Future Improvements
 
-- Historical volatility estimation from real market data
-- Volatility smile and volatility surface visualisation
+- Integration with live option chain data (Yahoo Finance/NSE APIs)
+- Local volatility and stochastic volatility models (Heston, SABR)
 - Binomial and Trinomial pricing models
 - American option pricing
-- Barrier and Asian option pricing
-- Live market data integration using financial APIs
+- Barrier, Asian, and other exotic options
+- Portfolio Greeks and risk analysis
+- Automatic calibration of volatility surfaces using live market data
